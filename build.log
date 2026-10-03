@@ -1,0 +1,105 @@
+Downloading https://services.gradle.org/distributions/gradle-8.9-bin.zip
+............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.9!
+
+Here are the highlights of this release:
+ - Enhanced Error and Warning Messages
+ - IDE Integration Improvements
+ - Daemon JVM Information
+
+For more details see https://docs.gradle.org/8.9/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :lib:preBuild UP-TO-DATE
+> Task :lib:preReleaseBuild UP-TO-DATE
+> Task :lib:mergeReleaseJniLibFolders
+> Task :lib:mergeReleaseNativeLibs NO-SOURCE
+> Task :xposed:preBuild UP-TO-DATE
+> Task :xposed:preReleaseBuild UP-TO-DATE
+> Task :lib:copyReleaseJniLibsProjectOnly
+> Task :xposed:mergeReleaseJniLibFolders
+> Task :xposed:mergeReleaseNativeLibs NO-SOURCE
+> Task :xposed:stripReleaseDebugSymbols NO-SOURCE
+> Task :xposed:extractReleaseNativeSymbolTables NO-SOURCE
+> Task :xposed:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :lib:generateReleaseResValues
+> Task :lib:generateReleaseResources
+> Task :lib:packageReleaseResources
+> Task :lib:javaPreCompileRelease
+> Task :lib:parseReleaseLocalResources
+> Task :xposed:checkReleaseDuplicateClasses
+> Task :xposed:generateReleaseBuildConfig
+> Task :xposed:javaPreCompileRelease
+> Task :lib:generateReleaseRFile
+> Task :lib:compileReleaseLibraryResources
+
+> Task :lib:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :xposed:generateReleaseResValues
+> Task :lib:bundleLibRuntimeToDirRelease
+> Task :lib:writeReleaseAarMetadata
+> Task :lib:bundleLibCompileToJarRelease
+> Task :xposed:mapReleaseSourceSetPaths
+> Task :xposed:checkReleaseAarMetadata
+> Task :xposed:generateReleaseResources
+> Task :xposed:createReleaseCompatibleScreenManifests
+> Task :lib:extractDeepLinksRelease
+> Task :xposed:extractDeepLinksRelease
+> Task :xposed:desugarReleaseFileDependencies
+> Task :xposed:mergeReleaseStartupProfile
+> Task :lib:processReleaseManifest
+> Task :xposed:mergeReleaseResources
+
+> Task :xposed:processReleaseMainManifest
+[com.android.support:animated-vector-drawable:28.0.0] /home/runner/.gradle/caches/8.9/transforms/5fec8e697f71c626c976a43139b22bef/transformed/animated-vector-drawable-28.0.0/AndroidManifest.xml Warning:
+	Namespace 'android.support.graphics.drawable' is used in multiple modules and/or libraries: com.android.support:animated-vector-drawable:28.0.0, com.android.support:support-vector-drawable:28.0.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+
+> Task :xposed:processReleaseManifest
+> Task :lib:prepareReleaseArtProfile
+> Task :xposed:mergeReleaseArtProfile
+> Task :xposed:processReleaseManifestForPackage
+> Task :lib:bundleLibRuntimeToJarRelease
+> Task :xposed:mergeExtDexRelease
+> Task :lib:mergeReleaseShaders
+> Task :lib:compileReleaseShaders NO-SOURCE
+> Task :lib:generateReleaseAssets UP-TO-DATE
+> Task :lib:packageReleaseAssets
+> Task :xposed:mergeReleaseShaders
+> Task :xposed:compileReleaseShaders NO-SOURCE
+> Task :xposed:generateReleaseAssets UP-TO-DATE
+> Task :xposed:mergeReleaseAssets
+> Task :xposed:compressReleaseAssets
+> Task :xposed:extractReleaseVersionControlInfo
+> Task :lib:processReleaseJavaRes NO-SOURCE
+> Task :xposed:collectReleaseDependencies
+> Task :xposed:sdkReleaseDependencyData
+> Task :xposed:validateSigningRelease
+> Task :xposed:writeReleaseAppMetadata
+> Task :xposed:writeReleaseSigningConfigVersions
+> Task :xposed:processReleaseResources
+
+> Task :xposed:compileReleaseJavaWithJavac
+The following annotation processors are not incremental: butterknife-7.0.1.jar (com.jakewharton:butterknife:7.0.1).
+Make sure all annotation processors are incremental to improve your build speed.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :xposed:dexBuilderRelease
+> Task :xposed:mergeReleaseGlobalSynthetics
+> Task :xposed:processReleaseJavaRes
+> Task :xposed:optimizeReleaseResources
+> Task :xposed:mergeReleaseJavaResource
+> Task :xposed:mergeDexRelease
+> Task :xposed:compileReleaseArtProfile
+> Task :xposed:packageRelease
+> Task :xposed:createReleaseApkListingFileRedirect
+> Task :xposed:assembleRelease
+
+BUILD SUCCESSFUL in 1m 5s
+57 actionable tasks: 57 executed
