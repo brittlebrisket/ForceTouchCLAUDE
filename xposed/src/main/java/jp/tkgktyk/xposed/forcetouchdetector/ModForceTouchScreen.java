@@ -46,10 +46,7 @@ import jp.tkgktyk.xposed.forcetouchdetector.app.util.ActionInfo;
  * Created by tkgktyk on 2015/02/12.
  */
 public class ModForceTouchScreen extends XposedModule {
-    private static final String CLASS_DECOR_VIEW = "com.android.internal.policy.impl.PhoneWindow$DecorView";
-    private static final String CLASS_DECOR_VIEW_M = "com.android.internal.policy.PhoneWindow$DecorView";
     private static final String CLASS_POPUP_WINDOW = "android.widget.PopupWindow";
-    private static final String CLASS_POPUP_VIEW_CONTAINER = "android.widget.PopupWindow$PopupViewContainer";
     private static final String FIELD_DETECTORS = FTD.NAME + "_forceTouchDetectors";
     private static final String FIELD_SETTINGS_CHANGED_RECEIVER = FTD.NAME + "_settingsChangedReceiver";
 
@@ -65,27 +62,29 @@ public class ModForceTouchScreen extends XposedModule {
     }
 
     private static void install() {
-        final XC_MethodReplacement dispatchTouchEvent = new XC_MethodReplacement() {
+        // Android 15 port: a "before" hook instead of a full replacement. The original
+        // ViewGroup.dispatchTouchEvent now runs natively for every view without detectors
+        // (i.e. almost all of them), instead of through reflection on every touch event.
+        final XC_MethodHook dispatchTouchEvent = new XC_MethodHook() {
             @Override
-            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                boolean handled = false;
+            protected void beforeHookedMethod(MethodHookParam methodHookParam) throws Throwable {
                 try {
                     View container = (View) methodHookParam.thisObject;
-                    MotionEvent event = (MotionEvent) methodHookParam.args[0];
                     List<Detector> detectors = getDetectors(container);
-                    if (detectors != null) {
-                        for (Detector ftd : detectors) {
-                            handled = handled || ftd.dispatchTouchEvent(event, methodHookParam);
-                        }
+                    if (detectors == null) {
+                        return;
                     }
-                    if (!handled) {
-                        handled = (Boolean) invokeOriginalMethod(methodHookParam);
+                    MotionEvent event = (MotionEvent) methodHookParam.args[0];
+                    boolean handled = false;
+                    for (Detector ftd : detectors) {
+                        handled = handled || ftd.dispatchTouchEvent(event, methodHookParam);
+                    }
+                    if (handled) {
+                        methodHookParam.setResult(true);
                     }
                 } catch (Throwable t) {
                     logE(t);
-                    handled = (Boolean) invokeOriginalMethod(methodHookParam);
                 }
-                return handled;
             }
         };
         class Installer extends XC_MethodHook {
@@ -131,9 +130,20 @@ public class ModForceTouchScreen extends XposedModule {
                         if (detectors == null) {
                             return;
                         }
-                        logD(target.getContext().getPackageName() + ": reload settings");
-                        FTD.Settings settings = (FTD.Settings) intent
-                                .getSerializableExtra(FTD.EXTRA_SETTINGS);
+                        FTD.Settings settings;
+                        if (Compat.isPowerAction(intent.getAction())) {
+                            // Charging changes touch-sensor readings; switch threshold set.
+                            logD(target.getContext().getPackageName() + ": power changed");
+                            mPrefs.reload();
+                            settings = new FTD.Settings(target.getContext(), mPrefs);
+                        } else {
+                            logD(target.getContext().getPackageName() + ": reload settings");
+                            settings = Compat.readSettingsExtra(intent);
+                            if (settings == null) {
+                                mPrefs.reload();
+                                settings = new FTD.Settings(target.getContext(), mPrefs);
+                            }
+                        }
                         for (Detector detector : detectors) {
                             detector.onSettingsLoaded(settings);
                         }
@@ -141,8 +151,11 @@ public class ModForceTouchScreen extends XposedModule {
                 };
                 XposedHelpers.setAdditionalInstanceField(target,
                         FIELD_SETTINGS_CHANGED_RECEIVER, settingsChangedReceiver);
-                target.getContext().registerReceiver(settingsChangedReceiver,
-                        new IntentFilter(FTD.ACTION_SETTINGS_CHANGED));
+                IntentFilter filter = new IntentFilter(FTD.ACTION_SETTINGS_CHANGED);
+                filter.addAction(Intent.ACTION_POWER_CONNECTED);
+                filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+                Compat.registerExportedReceiver(target.getContext(), settingsChangedReceiver,
+                        filter);
             }
         }
         class Uninstaller extends XC_MethodHook {
@@ -178,20 +191,11 @@ public class ModForceTouchScreen extends XposedModule {
             }
         }
 
-        Class<?> classDecorView;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            XposedHelpers.findAndHookMethod(ViewGroup.class, "dispatchTouchEvent",
-                    MotionEvent.class, dispatchTouchEvent);
-            classDecorView = XposedHelpers.findClass(CLASS_DECOR_VIEW_M, null);
-        } else {
-            classDecorView = XposedHelpers.findClass(CLASS_DECOR_VIEW, null);
-            XposedHelpers.findAndHookMethod(classDecorView, "dispatchTouchEvent",
-                    MotionEvent.class, dispatchTouchEvent);
-            final Class<?> classPopupViewContainer = XposedHelpers
-                    .findClass(CLASS_POPUP_VIEW_CONTAINER, null);
-            XposedHelpers.findAndHookMethod(classPopupViewContainer, "dispatchTouchEvent",
-                    MotionEvent.class, dispatchTouchEvent);
-        }
+        XposedHelpers.findAndHookMethod(ViewGroup.class, "dispatchTouchEvent",
+                MotionEvent.class, dispatchTouchEvent);
+        // Android 7+ moved DecorView out of PhoneWindow; the 2016 lookup failed here, so the
+        // module never attached to any window.
+        Class<?> classDecorView = Compat.findDecorViewClass();
         XposedHelpers.findAndHookMethod(classDecorView, "onAttachedToWindow",
                 new Installer() {
                     @Override
@@ -229,9 +233,7 @@ public class ModForceTouchScreen extends XposedModule {
     }
 
     private static View getPopupView(XC_MethodHook.MethodHookParam param) {
-        return (View) XposedHelpers.getObjectField(param.thisObject,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ?
-                        "mBackgroundView" : "mPopupView");
+        return (View) XposedHelpers.getObjectField(param.thisObject, "mBackgroundView");
     }
 
     public static abstract class Detector {

@@ -357,7 +357,7 @@ public class FloatingAction implements View.OnClickListener {
         mLayoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, // Android 8+: TYPE_SYSTEM_ALERT is refused
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                         WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
@@ -373,7 +373,12 @@ public class FloatingAction implements View.OnClickListener {
         filter.addAction(FTD.ACTION_FORCE_TOUCH_UP);
         filter.addAction(FTD.ACTION_FORCE_TOUCH_END);
         filter.addAction(FTD.ACTION_FORCE_TOUCH_CANCEL);
-        context.registerReceiver(mBroadcastReceiver, filter);
+        // Android 14: must declare the receiver exported; these broadcasts come from hooked apps.
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            context.registerReceiver(mBroadcastReceiver, filter, Context.RECEIVER_EXPORTED);
+        } else {
+            context.registerReceiver(mBroadcastReceiver, filter);
+        }
     }
 
     private void setUpAnimator() {

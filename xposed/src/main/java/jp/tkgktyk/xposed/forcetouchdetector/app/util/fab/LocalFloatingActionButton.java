@@ -101,26 +101,26 @@ public class LocalFloatingActionButton extends ImageView {
         mShadowPadding = new Rect();
 
 //        TypedArray a = context.obtainStyledAttributes(attrs,
-//                R.styleable.FloatingActionButton, defStyleAttr,
-//                R.style.Widget_Design_FloatingActionButton);
-        Drawable background = getResources().getDrawable(R.drawable.design_fab_background);
-//                a.getDrawable(R.styleable.FloatingActionButton_android_background);
+//                R.styleable.FtdFloatingActionButton, defStyleAttr,
+//                R.style.Ftd_Widget_FloatingActionButton);
+        Drawable background = getResources().getDrawable(R.drawable.ftd_fab_background);
+//                a.getDrawable(R.styleable.FtdFloatingActionButton_android_background);
         mBackgroundTint = ColorStateList.valueOf(Color.BLACK);
-//                a.getColorStateList(R.styleable.FloatingActionButton_backgroundTint);
+//                a.getColorStateList(R.styleable.FtdFloatingActionButton_backgroundTint);
         mBackgroundTintMode = parseTintMode(-1, null);
 //                parseTintMode(a.getInt(
-//                R.styleable.FloatingActionButton_backgroundTintMode, -1), null);
+//                R.styleable.FtdFloatingActionButton_backgroundTintMode, -1), null);
         mRippleColor = 0;
-//                a.getColor(R.styleable.FloatingActionButton_rippleColor, 0);
+//                a.getColor(R.styleable.FtdFloatingActionButton_ftdRippleColor, 0);
         mSize = SIZE_NORMAL;
-//                a.getInt(R.styleable.FloatingActionButton_fabSize, SIZE_NORMAL);
-        mBorderWidth = getResources().getDimensionPixelSize(R.dimen.design_fab_border_width);
-//                a.getDimensionPixelSize(R.styleable.FloatingActionButton_borderWidth, 0);
-        final float elevation = getResources().getDimensionPixelSize(R.dimen.design_fab_elevation);
-//                a.getDimension(R.styleable.FloatingActionButton_elevation, 0f);
-        final float pressedTranslationZ = getResources().getDimensionPixelSize(R.dimen.design_fab_translation_z_pressed);
+//                a.getInt(R.styleable.FtdFloatingActionButton_ftdFabSize, SIZE_NORMAL);
+        mBorderWidth = getResources().getDimensionPixelSize(R.dimen.ftd_fab_border_width);
+//                a.getDimensionPixelSize(R.styleable.FtdFloatingActionButton_ftdBorderWidth, 0);
+        final float elevation = getResources().getDimensionPixelSize(R.dimen.ftd_fab_elevation);
+//                a.getDimension(R.styleable.FtdFloatingActionButton_elevation, 0f);
+        final float pressedTranslationZ = getResources().getDimensionPixelSize(R.dimen.ftd_fab_translation_z_pressed);
 //                a.getDimension(
-//                R.styleable.FloatingActionButton_pressedTranslationZ, 0f);
+//                R.styleable.FtdFloatingActionButton_ftdPressedTranslationZ, 0f);
 //        a.recycle();
 
         final ShadowViewDelegate delegate = new ShadowViewDelegate() {
@@ -153,7 +153,7 @@ public class LocalFloatingActionButton extends ImageView {
         }
 
         final int maxContentSize = (int) getResources().getDimension(
-                bigContent? R.dimen.local_fab_content_size: R.dimen.design_fab_image_size);
+                bigContent? R.dimen.local_fab_content_size: R.dimen.ftd_fab_image_size);
         mContentPadding = (getSizeDimension() - maxContentSize) / 2;
 
         mImpl.setBackgroundDrawable(background, mBackgroundTint,
@@ -277,10 +277,10 @@ public class LocalFloatingActionButton extends ImageView {
     final int getSizeDimension() {
         switch (mSize) {
             case SIZE_MINI:
-                return getResources().getDimensionPixelSize(R.dimen.design_fab_size_mini);
+                return getResources().getDimensionPixelSize(R.dimen.ftd_fab_size_mini);
             case SIZE_NORMAL:
             default:
-                return getResources().getDimensionPixelSize(R.dimen.design_fab_size_normal);
+                return getResources().getDimensionPixelSize(R.dimen.ftd_fab_size_normal);
         }
     }
 
@@ -376,7 +376,7 @@ public class LocalFloatingActionButton extends ImageView {
             if (dependency instanceof Snackbar.SnackbarLayout) {
                 // If the removed view is a SnackbarLayout, we will animate back to our normal
                 // position
-                if (ViewCompat.getTranslationY(child) != 0f) {
+                if (child.getTranslationY() != 0f) {
                     ViewCompat.animate(child)
                             .translationY(0f)
                             .scaleX(1f)
@@ -423,7 +423,7 @@ public class LocalFloatingActionButton extends ImageView {
             }
 
             final float translationY = getFabTranslationYForSnackbar(parent, fab);
-            ViewCompat.setTranslationY(fab, translationY);
+            fab.setTranslationY(translationY);
         }
 
         private float getFabTranslationYForSnackbar(CoordinatorLayout parent,
@@ -434,7 +434,7 @@ public class LocalFloatingActionButton extends ImageView {
                 final View view = dependencies.get(i);
                 if (view instanceof Snackbar.SnackbarLayout && parent.doViewsOverlap(fab, view)) {
                     minOffset = Math.min(minOffset,
-                            ViewCompat.getTranslationY(view) - view.getHeight());
+                            view.getTranslationY() - view.getHeight());
                 }
             }
 

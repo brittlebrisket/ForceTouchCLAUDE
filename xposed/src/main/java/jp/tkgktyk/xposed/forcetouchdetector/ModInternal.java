@@ -33,16 +33,14 @@ import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
 /**
  * Created by tkgktyk on 2015/02/13.
  */
 public class ModInternal extends XposedModule {
-    private static final String CLASS_PHONE_WINDOW_MANAGER = "com.android.internal.policy.impl.PhoneWindowManager";
     private static final String CLASS_PHONE_WINDOW_MANAGER_M = "com.android.server.policy.PhoneWindowManager";
-    private static final String CLASS_WINDOW_MANAGER_FUNCS = "android.view.WindowManagerPolicy.WindowManagerFuncs";
-    private static final String CLASS_IWINDOW_MANAGER = "android.view.IWindowManager";
 
     private static XSharedPreferences mPrefs;
 
@@ -97,10 +95,12 @@ public class ModInternal extends XposedModule {
                     // status bar service
                     //
                 } else if (action.equals(FTD.ACTION_NOTIFICATIONS)) {
-                    Object statusBarManager = XposedHelpers.callMethod(mPhoneWindowManager, "getStatusBarService");
+                    // Android 15 port: IStatusBarService.expandSettingsPanel now takes an
+                    // argument, so use the (hidden but stable) StatusBarManager API instead.
+                    Object statusBarManager = context.getSystemService("statusbar");
                     XposedHelpers.callMethod(statusBarManager, "expandNotificationsPanel");
                 } else if (action.equals(FTD.ACTION_QUICK_SETTINGS)) {
-                    Object statusBarManager = XposedHelpers.callMethod(mPhoneWindowManager, "getStatusBarService");
+                    Object statusBarManager = context.getSystemService("statusbar");
                     XposedHelpers.callMethod(statusBarManager, "expandSettingsPanel");
 
                     //
@@ -250,42 +250,39 @@ public class ModInternal extends XposedModule {
         }
     };
 
+    private static boolean mReceiverRegistered;
+
     private static XC_MethodHook init = new XC_MethodHook() {
         @Override
         protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+            if (mReceiverRegistered) {
+                return;
+            }
             mPhoneWindowManager = param.thisObject;
             Context context = (Context) XposedHelpers
                     .getObjectField(mPhoneWindowManager, "mContext");
-            context.registerReceiver(mActionReceiver, FTD.INTERNAL_ACTION_FILTER);
+            // Actions are requested by hooked apps (other processes), so the receiver in
+            // system_server must be exported (mandatory flag since Android 14).
+            Compat.registerExportedReceiver(context, mActionReceiver, FTD.INTERNAL_ACTION_FILTER);
+            mReceiverRegistered = true;
+            log("system actions ready");
         }
     };
 
     public static void initZygote(XSharedPreferences prefs) {
         mPrefs = prefs;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            try {
-                final Class<?> classPhoneWindowManager = XposedHelpers
-                        .findClass(CLASS_PHONE_WINDOW_MANAGER, null);
-                XposedHelpers.findAndHookMethod(classPhoneWindowManager, "init",
-                        Context.class, CLASS_IWINDOW_MANAGER, CLASS_WINDOW_MANAGER_FUNCS,
-                        init);
-            } catch (Throwable t) {
-                logE(t);
-            }
-        }
+        // Pre-Android-6 hook removed: the port targets Android 7+ (minSdk 26).
     }
 
     public static void handleLoadPackage(ClassLoader classLoader) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
-                final Class<?> classPhoneWindowManager = XposedHelpers
-                        .findClass(CLASS_PHONE_WINDOW_MANAGER_M, classLoader);
-                XposedHelpers.findAndHookMethod(classPhoneWindowManager, "init",
-                        Context.class, CLASS_IWINDOW_MANAGER, CLASS_WINDOW_MANAGER_FUNCS,
-                        init);
-            } catch (Throwable t) {
-                logE(t);
-            }
+        try {
+            final Class<?> classPhoneWindowManager = XposedHelpers
+                    .findClass(CLASS_PHONE_WINDOW_MANAGER_M, classLoader);
+            // init()'s parameters changed several times (3 args up to Android 11, 2 args on
+            // Android 15), so hook every overload instead of one exact signature.
+            XposedBridge.hookAllMethods(classPhoneWindowManager, "init", init);
+        } catch (Throwable t) {
+            logE(t);
         }
     }
 }

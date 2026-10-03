@@ -23,7 +23,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.support.design.R;
+import jp.tkgktyk.xposed.forcetouchdetector.R;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.View;
 import android.view.animation.Animation;
@@ -164,7 +164,7 @@ class FloatingActionButtonEclairMr1 extends FloatingActionButtonImpl {
         }
 
         Animation anim = android.view.animation.AnimationUtils.loadAnimation(
-                mView.getContext(), R.anim.design_fab_out);
+                mView.getContext(), R.anim.ftd_fab_out);
         anim.setInterpolator(AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR);
         anim.setDuration(SHOW_HIDE_ANIM_DURATION);
         anim.setAnimationListener(new AnimationUtils.AnimationListenerAdapter() {
@@ -190,7 +190,7 @@ class FloatingActionButtonEclairMr1 extends FloatingActionButtonImpl {
             mView.clearAnimation();
             mView.setVisibility(View.VISIBLE);
             Animation anim = android.view.animation.AnimationUtils.loadAnimation(
-                    mView.getContext(), R.anim.design_fab_in);
+                    mView.getContext(), R.anim.ftd_fab_in);
             anim.setDuration(SHOW_HIDE_ANIM_DURATION);
             anim.setInterpolator(AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR);
             mView.startAnimation(anim);

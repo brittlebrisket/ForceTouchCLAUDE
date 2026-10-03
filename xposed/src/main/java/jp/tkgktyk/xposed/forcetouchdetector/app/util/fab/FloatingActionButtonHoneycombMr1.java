@@ -36,7 +36,7 @@ class FloatingActionButtonHoneycombMr1 extends FloatingActionButtonEclairMr1 {
             return;
         }
 
-        if (!ViewCompat.isLaidOut(mView) || mView.isInEditMode()) {
+        if (!mView.isLaidOut() || mView.isInEditMode()) {
             // If the view isn't laid out, or we're in the editor, don't run the animation
             mView.setVisibility(View.GONE);
         } else {
@@ -70,7 +70,7 @@ class FloatingActionButtonHoneycombMr1 extends FloatingActionButtonEclairMr1 {
     @Override
     void show() {
         if (mView.getVisibility() != View.VISIBLE) {
-            if (ViewCompat.isLaidOut(mView) && !mView.isInEditMode()) {
+            if (mView.isLaidOut() && !mView.isInEditMode()) {
                 mView.setAlpha(0f);
                 mView.setScaleY(0f);
                 mView.setScaleX(0f);

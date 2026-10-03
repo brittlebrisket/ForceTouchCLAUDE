@@ -21,12 +21,11 @@ import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IntDef;
-import android.support.design.R;
+import jp.tkgktyk.xposed.forcetouchdetector.R;
 import android.support.design.widget.*;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.WindowInsetsCompat;
-import android.support.v4.widget.ScrollerCompat;
+import android.widget.OverScroller;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -143,12 +142,12 @@ public class AppBarLayout extends LinearLayout {
         super(context, attrs);
         setOrientation(VERTICAL);
 
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.AppBarLayout,
-                0, R.style.Widget_Design_AppBarLayout);
-        mTargetElevation = a.getDimensionPixelSize(R.styleable.AppBarLayout_elevation, 0);
-        setBackgroundDrawable(a.getDrawable(R.styleable.AppBarLayout_android_background));
-        if (a.hasValue(R.styleable.AppBarLayout_expanded)) {
-            setExpanded(a.getBoolean(R.styleable.AppBarLayout_expanded, false));
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FtdAppBarLayout,
+                0, R.style.Ftd_Widget_AppBarLayout);
+        mTargetElevation = a.getDimensionPixelSize(R.styleable.FtdAppBarLayout_elevation, 0);
+        setBackgroundDrawable(a.getDrawable(R.styleable.FtdAppBarLayout_android_background));
+        if (a.hasValue(R.styleable.FtdAppBarLayout_ftdExpanded)) {
+            setExpanded(a.getBoolean(R.styleable.FtdAppBarLayout_ftdExpanded, false));
         }
         a.recycle();
 
@@ -157,7 +156,7 @@ public class AppBarLayout extends LinearLayout {
 
         mListeners = new ArrayList<>();
 
-        ViewCompat.setElevation(this, mTargetElevation);
+        this.setElevation(mTargetElevation);
 
         ViewCompat.setOnApplyWindowInsetsListener(this,
                 new android.support.v4.view.OnApplyWindowInsetsListener() {
@@ -238,7 +237,7 @@ public class AppBarLayout extends LinearLayout {
      * @attr ref android.support.design.R.styleable#AppBarLayout_expanded
      */
     public void setExpanded(boolean expanded) {
-        setExpanded(expanded, ViewCompat.isLaidOut(this));
+        setExpanded(expanded, this.isLaidOut());
     }
 
     /**
@@ -302,7 +301,7 @@ public class AppBarLayout extends LinearLayout {
         for (int i = 0, z = getChildCount(); i < z; i++) {
             final View child = getChildAt(i);
             final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-            final int childHeight = ViewCompat.isLaidOut(child)
+            final int childHeight = child.isLaidOut()
                     ? child.getHeight()
                     : child.getMeasuredHeight();
             final int flags = lp.mScrollFlags;
@@ -315,7 +314,7 @@ public class AppBarLayout extends LinearLayout {
                     // For a collapsing scroll, we to take the collapsed height into account.
                     // We also break straight away since later views can't scroll beneath
                     // us
-                    range -= ViewCompat.getMinimumHeight(child);
+                    range -= child.getMinimumHeight();
                     break;
                 }
             } else {
@@ -352,7 +351,7 @@ public class AppBarLayout extends LinearLayout {
         for (int i = getChildCount() - 1; i >= 0; i--) {
             final View child = getChildAt(i);
             final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-            final int childHeight = ViewCompat.isLaidOut(child)
+            final int childHeight = child.isLaidOut()
                     ? child.getHeight()
                     : child.getMeasuredHeight();
             final int flags = lp.mScrollFlags;
@@ -363,7 +362,7 @@ public class AppBarLayout extends LinearLayout {
                 // The view has the quick return flag combination...
                 if ((flags & LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED) != 0) {
                     // If they're set to enter collapsed, use the minimum height
-                    range += ViewCompat.getMinimumHeight(child);
+                    range += child.getMinimumHeight();
                 } else {
                     // Else use the full height
                     range += childHeight;
@@ -390,7 +389,7 @@ public class AppBarLayout extends LinearLayout {
         for (int i = 0, z = getChildCount(); i < z; i++) {
             final View child = getChildAt(i);
             final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-            int childHeight = ViewCompat.isLaidOut(child)
+            int childHeight = child.isLaidOut()
                     ? child.getHeight()
                     : child.getMeasuredHeight();
             childHeight += lp.topMargin + lp.bottomMargin;
@@ -405,7 +404,7 @@ public class AppBarLayout extends LinearLayout {
                     // For a collapsing exit scroll, we to take the collapsed height into account.
                     // We also return the range straight away since later views can't scroll
                     // beneath us
-                    return range - ViewCompat.getMinimumHeight(child);
+                    return range - child.getMinimumHeight();
                 }
             } else {
                 // As soon as a view doesn't have the scroll flag, we end the range calculation.
@@ -418,7 +417,7 @@ public class AppBarLayout extends LinearLayout {
 
     final int getMinimumHeightForVisibleOverlappingContent() {
         final int topInset = mLastInsets != null ? mLastInsets.getSystemWindowInsetTop() : 0;
-        final int minHeight = ViewCompat.getMinimumHeight(this);
+        final int minHeight = this.getMinimumHeight();
         if (minHeight != 0) {
             // If this layout has a min height, use it (doubled)
             return (minHeight * 2) + topInset;
@@ -427,7 +426,7 @@ public class AppBarLayout extends LinearLayout {
         // Otherwise, we'll use twice the min height of our last child
         final int childCount = getChildCount();
         return childCount >= 1
-                ? (ViewCompat.getMinimumHeight(getChildAt(childCount - 1)) * 2) + topInset
+                ? (getChildAt(childCount - 1).getMinimumHeight() * 2) + topInset
                 : 0;
     }
 
@@ -534,11 +533,11 @@ public class AppBarLayout extends LinearLayout {
 
         public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
-            TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.AppBarLayout_LayoutParams);
-            mScrollFlags = a.getInt(R.styleable.AppBarLayout_LayoutParams_layout_scrollFlags, 0);
-            if (a.hasValue(R.styleable.AppBarLayout_LayoutParams_layout_scrollInterpolator)) {
+            TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.FtdAppBarLayout_LayoutParams);
+            mScrollFlags = a.getInt(R.styleable.FtdAppBarLayout_LayoutParams_ftdLayout_scrollFlags, 0);
+            if (a.hasValue(R.styleable.FtdAppBarLayout_LayoutParams_ftdLayout_scrollInterpolator)) {
                 int resId = a.getResourceId(
-                        R.styleable.AppBarLayout_LayoutParams_layout_scrollInterpolator, 0);
+                        R.styleable.FtdAppBarLayout_LayoutParams_ftdLayout_scrollInterpolator, 0);
                 mScrollInterpolator = android.view.animation.AnimationUtils.loadInterpolator(
                         c, resId);
             }
@@ -635,7 +634,7 @@ public class AppBarLayout extends LinearLayout {
 
         private boolean mSkipNestedPreScroll;
         private Runnable mFlingRunnable;
-        private ScrollerCompat mScroller;
+        private OverScroller mScroller;
 
         private ValueAnimatorCompat mAnimator;
 
@@ -734,19 +733,19 @@ public class AppBarLayout extends LinearLayout {
                 return true;
             }
 
-            switch (MotionEventCompat.getActionMasked(ev)) {
+            switch (ev.getActionMasked()) {
                 case MotionEvent.ACTION_MOVE: {
                     final int activePointerId = mActivePointerId;
                     if (activePointerId == INVALID_POINTER) {
                         // If we don't have a valid id, the touch down wasn't on content.
                         break;
                     }
-                    final int pointerIndex = MotionEventCompat.findPointerIndex(ev, activePointerId);
+                    final int pointerIndex = ev.findPointerIndex(activePointerId);
                     if (pointerIndex == -1) {
                         break;
                     }
 
-                    final int y = (int) MotionEventCompat.getY(ev, pointerIndex);
+                    final int y = (int) ev.getY(pointerIndex);
                     final int yDiff = Math.abs(y - mLastMotionY);
                     if (yDiff > mTouchSlop) {
                         mIsBeingDragged = true;
@@ -761,7 +760,7 @@ public class AppBarLayout extends LinearLayout {
                     final int y = (int) ev.getY();
                     if (parent.isPointInChildBounds(child, x, y) && canDragAppBarLayout()) {
                         mLastMotionY = y;
-                        mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
+                        mActivePointerId = ev.getPointerId(0);
                     }
                     break;
                 }
@@ -785,23 +784,22 @@ public class AppBarLayout extends LinearLayout {
             int x = (int) ev.getX();
             int y = (int) ev.getY();
 
-            switch (MotionEventCompat.getActionMasked(ev)) {
+            switch (ev.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     if (parent.isPointInChildBounds(child, x, y) && canDragAppBarLayout()) {
                         mLastMotionY = y;
-                        mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
+                        mActivePointerId = ev.getPointerId(0);
                     } else {
                         return false;
                     }
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    final int activePointerIndex = MotionEventCompat.findPointerIndex(ev,
-                            mActivePointerId);
+                    final int activePointerIndex = ev.findPointerIndex(mActivePointerId);
                     if (activePointerIndex == -1) {
                         return false;
                     }
 
-                    y = (int) MotionEventCompat.getY(ev, activePointerIndex);
+                    y = (int) ev.getY(activePointerIndex);
 
                     int dy = mLastMotionY - y;
                     if (!mIsBeingDragged && Math.abs(dy) > mTouchSlop) {
@@ -897,7 +895,7 @@ public class AppBarLayout extends LinearLayout {
             }
 
             if (mScroller == null) {
-                mScroller = ScrollerCompat.create(layout.getContext());
+                mScroller = new OverScroller(layout.getContext());
             }
 
             mScroller.fling(
@@ -908,7 +906,7 @@ public class AppBarLayout extends LinearLayout {
 
             if (mScroller.computeScrollOffset()) {
                 mFlingRunnable = new FlingRunnable(coordinatorLayout, layout);
-                ViewCompat.postOnAnimation(layout, mFlingRunnable);
+                layout.postOnAnimation(mFlingRunnable);
                 return true;
             } else {
                 mFlingRunnable = null;
@@ -931,7 +929,7 @@ public class AppBarLayout extends LinearLayout {
                     setAppBarTopBottomOffset(mParent, mLayout, mScroller.getCurrY());
 
                     // Post ourselves so that we run on the next animation
-                    ViewCompat.postOnAnimation(mLayout, this);
+                    mLayout.postOnAnimation(this);
                 }
             }
         }
@@ -964,7 +962,7 @@ public class AppBarLayout extends LinearLayout {
                 View child = abl.getChildAt(mOffsetToChildIndexOnLayout);
                 int offset = -child.getBottom();
                 if (mOffsetToChildIndexOnLayoutIsMinHeight) {
-                    offset += ViewCompat.getMinimumHeight(child);
+                    offset += child.getMinimumHeight();
                 } else {
                     offset += Math.round(child.getHeight() * mOffsetToChildIndexOnLayoutPerc);
                 }
@@ -987,7 +985,7 @@ public class AppBarLayout extends LinearLayout {
         private boolean canDragAppBarLayout() {
             if (mLastNestedScrollingChildRef != null) {
                 final View view = mLastNestedScrollingChildRef.get();
-                return view != null && view.isShown() && !ViewCompat.canScrollVertically(view, -1);
+                return view != null && view.isShown() && !view.canScrollVertically(-1);
             }
             return false;
         }
@@ -1069,7 +1067,7 @@ public class AppBarLayout extends LinearLayout {
                             if ((flags & LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED) != 0) {
                                 // For a collapsing scroll, we to take the collapsed height
                                 // into account.
-                                childScrollableHeight -= ViewCompat.getMinimumHeight(child);
+                                childScrollableHeight -= child.getMinimumHeight();
                             }
                         }
 
@@ -1110,7 +1108,7 @@ public class AppBarLayout extends LinearLayout {
                     final SavedState ss = new SavedState(superState);
                     ss.firstVisibleChildIndex = i;
                     ss.firstVisibileChildAtMinimumHeight =
-                            visBottom == ViewCompat.getMinimumHeight(child);
+                            visBottom == child.getMinimumHeight();
                     ss.firstVisibileChildPercentageShown = visBottom / (float) child.getHeight();
                     return ss;
                 }
@@ -1187,9 +1185,9 @@ public class AppBarLayout extends LinearLayout {
             super(context, attrs);
 
             TypedArray a = context.obtainStyledAttributes(attrs,
-                    R.styleable.ScrollingViewBehavior_Params);
+                    R.styleable.FtdScrollingViewBehavior_Params);
             mOverlayTop = a.getDimensionPixelSize(
-                    R.styleable.ScrollingViewBehavior_Params_behavior_overlapTop, 0);
+                    R.styleable.FtdScrollingViewBehavior_Params_ftdBehavior_overlapTop, 0);
             a.recycle();
         }
 
@@ -1216,7 +1214,7 @@ public class AppBarLayout extends LinearLayout {
                 }
 
                 final AppBarLayout appBar = findFirstAppBarLayout(dependencies);
-                if (appBar != null && ViewCompat.isLaidOut(appBar)) {
+                if (appBar != null && appBar.isLaidOut()) {
                     if (ViewCompat.getFitsSystemWindows(appBar)) {
                         // If the AppBarLayout is fitting system windows then we need to also,
                         // otherwise we'll get CoL's compatible layout functionality

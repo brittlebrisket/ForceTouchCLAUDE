@@ -21,7 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
 
-import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedHelpers;
 
@@ -41,25 +41,25 @@ public class ModLongPress extends XposedModule {
     }
 
     private static void install() {
-        XC_MethodReplacement injectLongClick = new XC_MethodReplacement() {
+        // Android 15 port: "before" hooks instead of full replacements, so View.onTouchEvent
+        // runs natively for every normal touch and only our synthetic long-press events
+        // (deviceId == -1) are intercepted.
+        XC_MethodHook injectLongClick = new XC_MethodHook() {
             @Override
-            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
+            protected void beforeHookedMethod(MethodHookParam methodHookParam) throws Throwable {
                 try {
                     View view = (View) methodHookParam.thisObject;
                     MotionEvent event = (MotionEvent) methodHookParam.args[0];
-//                    logD(view.toString() + event.toString());
                     if (event.getActionMasked() == MotionEvent.ACTION_DOWN &&
                             event.getDeviceId() == -1 &&
                             view.isLongClickable()) {
-//                        logD();
                         if (view.performLongClick()) {
-                            return true;
+                            methodHookParam.setResult(true);
                         }
                     }
                 } catch (Throwable t) {
                     logE(t);
                 }
-                return invokeOriginalMethod(methodHookParam);
             }
         };
         Class<?>[] classes = new Class<?>[]{View.class, AbsListView.class};
@@ -68,27 +68,24 @@ public class ModLongPress extends XposedModule {
         }
 
         XposedHelpers.findAndHookMethod(GestureDetector.class, "onTouchEvent", MotionEvent.class,
-                new XC_MethodReplacement() {
+                new XC_MethodHook() {
                     @Override
-                    protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
+                    protected void beforeHookedMethod(MethodHookParam methodHookParam) throws Throwable {
                         try {
                             GestureDetector detector = (GestureDetector) methodHookParam.thisObject;
                             MotionEvent event = (MotionEvent) methodHookParam.args[0];
-//                            logD(detector.toString() + event.toString());
                             if (event.getActionMasked() == MotionEvent.ACTION_DOWN &&
                                     event.getDeviceId() == -1 &&
                                     detector.isLongpressEnabled()) {
-//                                logD();
                                 GestureDetector.OnGestureListener listener
                                         = (GestureDetector.OnGestureListener) XposedHelpers
                                         .getObjectField(detector, "mListener");
                                 listener.onLongPress(event);
-                                return true;
+                                methodHookParam.setResult(true);
                             }
                         } catch (Throwable t) {
                             logE(t);
                         }
-                        return invokeOriginalMethod(methodHookParam);
                     }
                 });
     }

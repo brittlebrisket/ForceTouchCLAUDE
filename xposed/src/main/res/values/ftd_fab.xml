@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Resources for the FloatingActionButton / AppBarLayout code the original author copied out of
+  the 2016 Design Support Library (app/util/fab). That code used the library's private
+  resources, which no longer exist in the last support library (28.0.0), so they are vendored
+  here under an ftd_ prefix (values from design library 23.x, Apache 2.0).
+-->
+<resources>
+    <color name="ftd_fab_stroke_top_outer_color">#2EFFFFFF</color>
+    <color name="ftd_fab_stroke_top_inner_color">#1AFFFFFF</color>
+    <color name="ftd_fab_stroke_end_outer_color">#0F000000</color>
+    <color name="ftd_fab_stroke_end_inner_color">#0A000000</color>
+    <color name="ftd_fab_shadow_start_color">#44000000</color>
+    <color name="ftd_fab_shadow_mid_color">#14000000</color>
+    <color name="ftd_fab_shadow_end_color">@android:color/transparent</color>
+
+    <dimen name="ftd_fab_elevation">6dp</dimen>
+    <dimen name="ftd_fab_translation_z_pressed">6dp</dimen>
+    <dimen name="ftd_fab_image_size">24dp</dimen>
+    <dimen name="ftd_fab_size_normal">56dp</dimen>
+    <dimen name="ftd_fab_size_mini">40dp</dimen>
+    <dimen name="ftd_fab_border_width">0.5dp</dimen>
+    <dimen name="ftd_appbar_elevation">4dp</dimen>
+
+    <attr name="ftdRippleColor" format="color"/>
+    <attr name="ftdFabSize">
+        <enum name="normal" value="0"/>
+        <enum name="mini" value="1"/>
+    </attr>
+    <attr name="ftdPressedTranslationZ" format="dimension"/>
+    <attr name="ftdBorderWidth" format="dimension"/>
+    <attr name="ftdExpanded" format="boolean"/>
+    <attr name="ftdLayout_scrollFlags">
+        <flag name="scroll" value="0x1"/>
+        <flag name="exitUntilCollapsed" value="0x2"/>
+        <flag name="enterAlways" value="0x4"/>
+        <flag name="enterAlwaysCollapsed" value="0x8"/>
+    </attr>
+    <attr name="ftdLayout_scrollInterpolator" format="reference"/>
+    <attr name="ftdBehavior_overlapTop" format="dimension"/>
+
+    <!-- backgroundTint, backgroundTintMode and elevation come from appcompat-v7. -->
+    <declare-styleable name="FtdFloatingActionButton">
+        <attr name="android:background"/>
+        <attr name="backgroundTint"/>
+        <attr name="backgroundTintMode"/>
+        <attr name="ftdRippleColor"/>
+        <attr name="ftdFabSize"/>
+        <attr name="elevation"/>
+        <attr name="ftdPressedTranslationZ"/>
+        <attr name="ftdBorderWidth"/>
+    </declare-styleable>
+
+    <declare-styleable name="FtdAppBarLayout">
+        <attr name="elevation"/>
+        <attr name="android:background"/>
+        <attr name="ftdExpanded"/>
+    </declare-styleable>
+
+    <declare-styleable name="FtdAppBarLayout_LayoutParams">
+        <attr name="ftdLayout_scrollFlags"/>
+        <attr name="ftdLayout_scrollInterpolator"/>
+    </declare-styleable>
+
+    <declare-styleable name="FtdScrollingViewBehavior_Params">
+        <attr name="ftdBehavior_overlapTop"/>
+    </declare-styleable>
+
+    <style name="Ftd.Widget.FloatingActionButton" parent="android:Widget">
+        <item name="android:background">@drawable/ftd_fab_background</item>
+        <item name="backgroundTint">?attr/colorAccent</item>
+        <item name="ftdFabSize">normal</item>
+        <item name="elevation">@dimen/ftd_fab_elevation</item>
+        <item name="ftdPressedTranslationZ">@dimen/ftd_fab_translation_z_pressed</item>
+        <item name="ftdRippleColor">?attr/colorControlHighlight</item>
+        <item name="ftdBorderWidth">@dimen/ftd_fab_border_width</item>
+    </style>
+
+    <style name="Ftd.Widget.AppBarLayout" parent="android:Widget">
+        <item name="elevation">@dimen/ftd_appbar_elevation</item>
+        <item name="android:background">?attr/colorPrimary</item>
+    </style>
+</resources>

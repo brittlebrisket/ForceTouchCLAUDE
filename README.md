@@ -1,3 +1,31 @@
+# Android 15 / LSPosed port
+
+This fork updates Force Touch Detector (last released for Android 6 in 2016) so it builds and
+runs on Android 15 with LSPosed. The detection logic and features are unchanged.
+
+**Install**
+1. Download `ForceTouch-android15.apk` from the latest release and install it.
+2. In LSPosed Manager, enable the module and tick **System Framework** plus the apps where you
+   want force touch (or select all apps), then reboot.
+3. Open the app, grant the overlay and notification permissions, and use **Size** as the
+   detection method if your screen reports a fixed pressure (most modern phones do).
+
+**What changed for Android 7-15**
+- Hooks: `DecorView` moved out of `PhoneWindow` in Android 7 (the old lookup failed silently, so
+  nothing attached); `PhoneWindowManager.init` changed signature; receivers registered in hooked
+  apps and in system_server now pass the export flag Android 14 requires; settings broadcasts are
+  read with the module's class loader; touch hooks are lightweight "before" hooks instead of
+  reflective replacements.
+- Settings: LSPosed "new XSharedPreferences" (`xposedminversion` 93 + `xposedsharedprefs`)
+  replaces the world-readable preferences file that Android 7+ forbids.
+- App: targetSdk 34 (Android 15 refuses to install the old targetSdk 23), notification channel,
+  immutable PendingIntents, foreground services with a declared type, overlay window type,
+  notification permission prompt, charging detection at runtime instead of a manifest receiver.
+- Build: Gradle 8.9 / AGP 8.5, last Support Library (28.0.0), the design-library resources the
+  copied FAB code depended on are vendored, CI builds and publishes the APK.
+
+---
+
 # Touch Pressure/Size Gesture
 
 ## Introduction

@@ -96,7 +96,7 @@ class FloatingActionButtonLollipop extends FloatingActionButtonHoneycombMr1 {
 
     @Override
     public void setElevation(float elevation) {
-        ViewCompat.setElevation(mView, elevation);
+        mView.setElevation(elevation);
     }
 
     @Override

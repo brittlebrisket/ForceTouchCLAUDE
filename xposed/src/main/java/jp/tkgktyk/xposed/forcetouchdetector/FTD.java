@@ -425,7 +425,16 @@ public class FTD {
     @SuppressWarnings("deprecation")
     @SuppressLint("WorldReadableFiles")
     public static SharedPreferences getSharedPreferences(Context context) {
-        return context.getSharedPreferences(PACKAGE_NAME + "_preferences", Context.MODE_WORLD_READABLE);
+        try {
+            // Works when the module is enabled in LSPosed: LSPosed redirects this file to a
+            // location every hooked app can read ("new XSharedPreferences").
+            return context.getSharedPreferences(PACKAGE_NAME + "_preferences", Context.MODE_WORLD_READABLE);
+        } catch (SecurityException e) {
+            // Module not enabled in LSPosed yet: Android 7+ forbids world-readable files, so
+            // fall back to private storage instead of crashing. Settings will not reach hooked
+            // apps until the module is enabled and the app is reopened.
+            return context.getSharedPreferences(PACKAGE_NAME + "_preferences", Context.MODE_PRIVATE);
+        }
     }
 
     public static Context getModContext(Context context) {

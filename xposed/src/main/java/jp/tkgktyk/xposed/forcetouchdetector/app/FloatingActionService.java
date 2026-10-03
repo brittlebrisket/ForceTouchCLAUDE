@@ -50,17 +50,13 @@ public class FloatingActionService extends Service {
 
         FTD.Settings settings = new FTD.Settings(this, FTD.getSharedPreferences(this));
 
-        if (settings.showNotification) {
-            if (mServiceNotification == null) {
-                mServiceNotification = new ServiceNotification(this, R.drawable.ic_stat_floating_action,
-                        R.string.app_name, SettingsActivity.class);
-                mServiceNotification.update(R.string.state_floating_action);
-            }
-        } else {
-            if (mServiceNotification != null) {
-                mServiceNotification.stop();
-                mServiceNotification = null;
-            }
+        // Android 8+: the overlay only survives as a foreground service, which must show a
+        // notification, so it is always shown now (hide it via Android's notification
+        // settings for this app if you don't want to see it).
+        if (mServiceNotification == null) {
+            mServiceNotification = new ServiceNotification(this, R.drawable.ic_stat_floating_action,
+                    R.string.app_name, SettingsActivity.class);
+            mServiceNotification.update(R.string.state_floating_action);
         }
 
         if (mFloatingAction != null) {
@@ -75,7 +71,9 @@ public class FloatingActionService extends Service {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        mFloatingAction.onConfigurationChanged(newConfig);
+        if (mFloatingAction != null) {
+            mFloatingAction.onConfigurationChanged(newConfig);
+        }
     }
 
     @Override
@@ -87,6 +85,9 @@ public class FloatingActionService extends Service {
             mServiceNotification = null;
         }
 
-        mFloatingAction.onDestroy();
+        if (mFloatingAction != null) {
+            mFloatingAction.onDestroy();
+            mFloatingAction = null;
+        }
     }
 }

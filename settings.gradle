@@ -1,1 +1,21 @@
-include ':xposed', ':lib', ':key', ':game'
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Xposed API (compileOnly; LSPosed provides it at runtime)
+        maven { url 'https://api.xposed.info/' }
+    }
+}
+
+rootProject.name = 'ForceTouch'
+// The original 'key' and 'game' demo modules are not needed for the Xposed module.
+include ':xposed', ':lib'

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- LSPosed recommended scope. "android" = System Framework (needed for global actions:
+         back/home/recents, screenshot, notifications, power menu...). Add the apps you want
+         Force Touch in yourself (or "Select all") in LSPosed Manager. -->
+    <string-array name="xposed_scope" translatable="false">
+        <item>android</item>
+    </string-array>
+</resources>

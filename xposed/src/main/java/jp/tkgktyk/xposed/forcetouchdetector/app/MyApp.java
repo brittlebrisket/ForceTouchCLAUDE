@@ -327,12 +327,14 @@ public class MyApp extends BaseApplication {
         Intent fa = new Intent(context, FloatingActionService.class);
         boolean ftdEnable = force || knuckle || wiggle || scratch;
         if (ftdEnable) {
+            // Android 8+: services started outside the app's foreground must be foreground
+            // services (both call startForeground right away).
             if (floatingAction) {
                 context.stopService(em);
-                context.startService(fa);
+                context.startForegroundService(fa);
             } else if (showNotification) {
                 context.stopService(fa);
-                context.startService(em);
+                context.startForegroundService(em);
             } else {
                 context.stopService(em);
                 context.stopService(fa);

@@ -50,6 +50,8 @@ import jp.tkgktyk.xposed.forcetouchdetector.app.util.ActionInfo;
 public class SettingsActivity extends BaseSettingsActivity {
 
     private static final int REQUEST_OVERLAY_PERMISSION = 1;
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 2;
+    private static final String PERMISSION_POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
     @Override
     protected BaseFragment newRootFragment() {
@@ -82,6 +84,11 @@ public class SettingsActivity extends BaseSettingsActivity {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION);
+        } else if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(PERMISSION_POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // Android 13+: without this the status / floating-action notification is hidden.
+            requestPermissions(new String[]{PERMISSION_POST_NOTIFICATIONS},
+                    REQUEST_NOTIFICATION_PERMISSION);
         }
     }
 
@@ -121,7 +128,16 @@ public class SettingsActivity extends BaseSettingsActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            getPreferenceManager().setSharedPreferencesMode(MODE_WORLD_READABLE);
+            // MODE_WORLD_READABLE only works once LSPosed has enabled the module (it redirects
+            // the file); otherwise Android 7+ throws. Fall back to private so the UI still opens.
+            int mode = MODE_PRIVATE;
+            try {
+                getActivity().getSharedPreferences(FTD.PACKAGE_NAME + "_preferences",
+                        MODE_WORLD_READABLE);
+                mode = MODE_WORLD_READABLE;
+            } catch (SecurityException ignored) {
+            }
+            getPreferenceManager().setSharedPreferencesMode(mode);
             getPreferenceManager().getSharedPreferences()
                     .registerOnSharedPreferenceChangeListener(mChangeListener);
         }

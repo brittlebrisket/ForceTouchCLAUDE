@@ -52,8 +52,8 @@ class ViewOffsetHelper {
     }
 
     private void updateOffsets() {
-        ViewCompat.offsetTopAndBottom(mView, mOffsetTop - (mView.getTop() - mLayoutTop));
-        ViewCompat.offsetLeftAndRight(mView, mOffsetLeft - (mView.getLeft() - mLayoutLeft));
+        mView.offsetTopAndBottom(mOffsetTop - (mView.getTop() - mLayoutTop));
+        mView.offsetLeftAndRight(mOffsetLeft - (mView.getLeft() - mLayoutLeft));
 
         // Manually invalidate the view and parent to make sure we get drawn pre-M
         if (Build.VERSION.SDK_INT < 23) {
@@ -66,9 +66,9 @@ class ViewOffsetHelper {
     }
 
     private static void tickleInvalidationFlag(View view) {
-        final float x = ViewCompat.getTranslationX(view);
-        ViewCompat.setTranslationX(view, x + 1);
-        ViewCompat.setTranslationX(view, x);
+        final float x = view.getTranslationX();
+        view.setTranslationX(x + 1);
+        view.setTranslationX(x);
     }
 
     /**

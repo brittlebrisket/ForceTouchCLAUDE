@@ -17,6 +17,7 @@
 package jp.tkgktyk.lib;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -29,6 +30,9 @@ import android.support.annotation.StringRes;
  * Created by tkgktyk on 2015/05/14.
  */
 public class ServiceNotification {
+
+    /** Android 8+: every notification needs a channel. */
+    private static final String CHANNEL_ID = "service";
 
     private Service mService;
     private Notification.Builder mBuilder;
@@ -48,10 +52,21 @@ public class ServiceNotification {
                         service,
                         0,
                         notifyIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
+                        // Android 12+: PendingIntents must declare mutability.
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
                 );
 
-        mBuilder = new Notification.Builder(service)
+        NotificationManager nm = (NotificationManager) service.getSystemService(
+                Context.NOTIFICATION_SERVICE);
+        if (nm.getNotificationChannel(CHANNEL_ID) == null) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    service.getString(titleId), NotificationManager.IMPORTANCE_LOW);
+            channel.setShowBadge(false);
+            nm.createNotificationChannel(channel);
+        }
+
+        mBuilder = new Notification.Builder(service, CHANNEL_ID)
+                .setOngoing(true)
                 .setContentIntent(pendingIntent)
                 .setContentTitle(service.getString(titleId))
                 .setSmallIcon(iconId);

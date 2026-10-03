@@ -29,8 +29,9 @@ public class Mod implements IXposedHookZygoteInit, IXposedHookLoadPackage {
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
+        // With LSPosed's "new XSharedPreferences" (xposedsharedprefs in the manifest) the
+        // settings file is readable from every hooked app; no chmod/makeWorldReadable needed.
         mPrefs = new XSharedPreferences(FTD.PACKAGE_NAME);
-        mPrefs.makeWorldReadable();
 
         FTD.Settings settings = new FTD.Settings(null, mPrefs);
         ModInternal.initZygote(mPrefs);
